@@ -1,11 +1,11 @@
 from datetime import timedelta
 
 from minio import Minio
-from app.core.interfaces.storage_interface import StorageInterface
+from app.core.interfaces.storage_interface import IStorageRepository
 import uuid
 import io
 
-class MinioStorage(StorageInterface):
+class MinioStorage(IStorageRepository):
     def __init__(self, endpoint: str, access_key: str, secret_key: str, bucket: str | None = None, secure: bool = False):
         self.client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=secure)
         self.endpoint = endpoint

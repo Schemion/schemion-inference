@@ -1,6 +1,6 @@
 from typing import Protocol
 
-class StorageInterface(Protocol):
+class IStorageRepository(Protocol):
     def upload_file(self, file_data: bytes, filename: str, content_type: str, bucket: str) -> str:
         ...
 

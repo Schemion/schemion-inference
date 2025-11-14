@@ -3,6 +3,7 @@ import pika
 from app.config import settings
 
 
+#TODO: Добавить логгер и убрать принты
 class RabbitMQListener:
     def __init__(self, queue_name: str, callback):
         self.queue_name = queue_name
