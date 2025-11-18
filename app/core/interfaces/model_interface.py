@@ -1,15 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import Optional
+from uuid import UUID
+
 from app.core.entities.model import Model
 
 
 class IModelRepository(ABC):
     @abstractmethod
-    def get_by_id(self, model_id) -> Optional[Model]:
-        ...
-
-    @abstractmethod
-    def list(self) -> List[Model]:
+    def get_by_id(self, model_id: UUID) -> Optional[Model]:
         ...
 
     @abstractmethod

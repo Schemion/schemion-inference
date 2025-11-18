@@ -1,19 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID
 from app.core.entities import Task
 
 
 class ITaskRepository(ABC):
+    @abstractmethod
+    def get_by_id(self, task_id: UUID) -> Optional[Task]:
+        ...
 
     @abstractmethod
-    def get(self, task_id: UUID) -> Optional[Task]: ...
+    def update(self, task: Task) -> Task:
+        ...
 
-    @abstractmethod
-    def create(self, task: Task) -> Task: ...
-
-    @abstractmethod
-    def update(self, task: Task) -> Task: ...
-
-    @abstractmethod
-    def list(self) -> List[Task]: ...

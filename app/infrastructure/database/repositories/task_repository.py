@@ -13,29 +13,21 @@ class TaskRepository(ITaskRepository):
     def __init__(self, db: Session):
         self.db = db
 
-    def get(self, task_id: UUID) -> Optional[TaskEntity]:
-        model = self.db.query(TaskModel).filter(task_id == TaskModel.id).first()
-        return OrmEntityMapper.to_entity(model, TaskEntity)
+    def get_by_id(self, task_id: UUID) -> Optional[TaskEntity]:
+        task = self.db.query(TaskModel).filter(task_id == TaskModel.id).first()
+        return OrmEntityMapper.to_entity(task, TaskEntity)
 
-    def create(self, task: TaskEntity) -> TaskEntity:
-        model = OrmEntityMapper.to_model(task, TaskModel)  # ENTITY → ORM MODEL
-        self.db.add(model)
-        self.db.commit()
-        self.db.refresh(model)
-        return OrmEntityMapper.to_entity(model, TaskEntity)
 
-    def update(self, task: TaskEntity) -> TaskEntity:
-        model = self.db.query(TaskModel).filter(task.id == TaskModel.id).first()
-        if not model:
+    def update(self, task: TaskEntity) -> Optional[TaskEntity]:
+        task = self.db.query(TaskModel).filter(task.id == TaskModel.id).first()
+        if not task:
             return None
 
-        for key, value in task.__dict__.items():
-            setattr(model, key, value)
+        mapped = OrmEntityMapper.to_model(task, TaskModel)
+        for key, value in mapped.__dict__.items():
+            if hasattr(task, key):
+                setattr(task, key, value)
 
         self.db.commit()
-        self.db.refresh(model)
-        return OrmEntityMapper.to_entity(model, TaskEntity)
-
-    def list(self) -> List[TaskEntity]:
-        models = self.db.query(TaskModel).all()
-        return [OrmEntityMapper.to_entity(m, TaskEntity) for m in models]
+        self.db.refresh(task)
+        return OrmEntityMapper.to_entity(task, TaskEntity)
