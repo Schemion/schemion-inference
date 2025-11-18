@@ -1,0 +1,2 @@
+from .yolo_detector import YoloDetector
+from .faster_rcnn_detector import FasterRCNNDetector

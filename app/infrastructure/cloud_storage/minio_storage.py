@@ -1,9 +1,12 @@
 from datetime import timedelta
-
-from minio import Minio
-from app.core.interfaces.storage_interface import IStorageRepository
+from minio import Minio, S3Error
+from app.core.interfaces import IStorageRepository
 import uuid
 import io
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class MinioStorage(IStorageRepository):
     def __init__(self, endpoint: str, access_key: str, secret_key: str, bucket: str | None = None, secure: bool = False):
@@ -41,3 +44,24 @@ class MinioStorage(IStorageRepository):
             object_name=object_name,
             expires=timedelta(seconds=expires)
         )
+
+    def download_file_to_bytes(self, object_name: str, bucket: str) -> bytes:
+        try:
+            response = self.client.get_object(bucket_name=bucket, object_name=object_name)
+            data = response.read()
+            response.close()
+            response.release_conn()
+            return data
+        except S3Error as e:
+            logger.error(f"Failed to download {object_name} from bucket {bucket}: {e}")
+            raise
+        except Exception as e:
+            logger.exception(f"Unexpected error downloading {object_name}: {e}")
+            raise
+
+    def download_file_to_path(self, object_name: str, bucket: str, local_path: str) -> None:
+        try:
+            self.client.fget_object(bucket_name=bucket, object_name=object_name, file_path=local_path)
+        except S3Error as e:
+            logger.error(f"Failed to download {object_name} to {local_path}: {e}")
+            raise
