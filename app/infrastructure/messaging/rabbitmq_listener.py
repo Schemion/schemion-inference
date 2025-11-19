@@ -1,36 +1,27 @@
 import json
-import pika
+import aio_pika
 from app.config import settings
 
 
-#TODO: Добавить логгер и убрать принты
 class RabbitMQListener:
     def __init__(self, queue_name: str, callback):
         self.queue_name = queue_name
         self.callback = callback
-        self._connection = pika.BlockingConnection(
-            pika.URLParameters(settings.RABBITMQ_URL)
-        )
-        self._channel = self._connection.channel()
-        self._channel.queue_declare(queue=queue_name, durable=True)
+        self.url = settings.RABBITMQ_URL
 
-    def start(self):
-        def _callback(ch, method, _properties, body):
-            try:
-                message = json.loads(body)
-                self.callback(message)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-            except Exception as e:
-                print(f"Error processing message: {e}")
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+    async def start(self):
+        connection = await aio_pika.connect_robust(self.url)
+        channel = await connection.channel()
 
-        self._channel.basic_consume(
-            queue=self.queue_name, on_message_callback=_callback, auto_ack=False
-        )
+        await channel.set_qos(prefetch_count=1)
 
-        try:
-            self._channel.start_consuming()
-        except KeyboardInterrupt:
-            print("Stopping listener...")
-        finally:
-            self._connection.close()
+        queue = await channel.declare_queue(self.queue_name, durable=True)
+
+        async with queue.iterator() as queue_iter:
+            async for message in queue_iter:
+                async with message.process():
+                    try:
+                        data = json.loads(message.body)
+                        await self.callback(data)
+                    except Exception as e:
+                        pass # TODO: Добавить логгер

@@ -2,6 +2,8 @@ import json
 import pika
 from app.config import settings
 
+# Его существование находится под вопросом, он мне не нужен скорее всего но пусть будет
+
 #TODO: Добавить логгер и убрать принты
 class RabbitMQPublisher:
     def __init__(self):

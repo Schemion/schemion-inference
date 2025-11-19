@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 class InferenceUseCase:
     def __init__(self,storage: IStorageRepository, task_repo: ITaskRepository, model_repo: IModelRepository,
-        images_bucket: str = "schemas-images", # потом поменять так как изменил тему немного
-        models_bucket: str = "models",
-        results_bucket: str = "inference-results", # его пока нет но надо бы чтобы был
+            images_bucket: str = "schemas-images", # потом поменять так как изменил тему немного
+            models_bucket: str = "models",
+            results_bucket: str = "inference-results", # его пока нет но надо бы чтобы был
         ):
         self.storage = storage
         self.task_repo = task_repo
