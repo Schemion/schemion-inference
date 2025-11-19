@@ -8,7 +8,7 @@ from app.config import settings
 from app.dependencies import get_db
 
 async def main():
-    storage = MinioStorage(endpoint=settings.minio_endpoint, access_key=settings.minio_access_key, secret_key=settings.minio_secret_key)
+    storage = MinioStorage(endpoint=settings.MINIO_ENDPOINT, access_key=settings.MINIO_ACCESS_KEY, secret_key=settings.MINIO_ACCESS_KEY)
     task_repository = TaskRepository(get_db())
     model_repository = ModelRepository(get_db())
 
