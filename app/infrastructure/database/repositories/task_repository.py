@@ -17,17 +17,16 @@ class TaskRepository(ITaskRepository):
         task = self.db.query(TaskModel).filter(task_id == TaskModel.id).first()
         return OrmEntityMapper.to_entity(task, TaskEntity)
 
-
-    def update(self, task: TaskEntity) -> Optional[TaskEntity]:
-        task = self.db.query(TaskModel).filter(task.id == TaskModel.id).first()
-        if not task:
+    def update(self, task_entity: TaskEntity) -> Optional[TaskEntity]:
+        task_model = self.db.query(TaskModel).filter(task_entity.id == TaskModel.id).first()
+        if not task_model:
             return None
 
-        mapped = OrmEntityMapper.to_model(task, TaskModel)
-        for key, value in mapped.__dict__.items():
-            if hasattr(task, key):
-                setattr(task, key, value)
+        for field in task_entity.__dict__:
+            if hasattr(task_model, field):
+                setattr(task_model, field, getattr(task_entity, field))
 
         self.db.commit()
-        self.db.refresh(task)
-        return OrmEntityMapper.to_entity(task, TaskEntity)
+        self.db.refresh(task_model)
+
+        return OrmEntityMapper.to_entity(task_model, TaskEntity)

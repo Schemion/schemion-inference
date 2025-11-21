@@ -1,0 +1,133 @@
+2025-11-21 05:34:48 - INFO - Inference task 12301316-bd32-49bf-800e-c2635d1efe3a started
+2025-11-21 05:44:13 - INFO - Inference task 6e8b6bf7-97ae-463a-b405-02b1f3ad97cf started
+2025-11-21 05:44:13 - INFO - select pg_catalog.version()
+2025-11-21 05:44:13 - INFO - [raw sql] {}
+2025-11-21 05:44:14 - INFO - select current_schema()
+2025-11-21 05:44:14 - INFO - [raw sql] {}
+2025-11-21 05:44:14 - INFO - show standard_conforming_strings
+2025-11-21 05:44:14 - INFO - [raw sql] {}
+2025-11-21 05:44:14 - INFO - BEGIN (implicit)
+2025-11-21 05:44:14 - INFO - SELECT tasks.id AS tasks_id, tasks.user_id AS tasks_user_id, tasks.task_type AS tasks_task_type, tasks.model_id AS tasks_model_id, tasks.dataset_id AS tasks_dataset_id, tasks.input_path AS tasks_input_path, tasks.output_path AS tasks_output_path, tasks.error_msg AS tasks_error_msg, tasks.created_at AS tasks_created_at, tasks.updated_at AS tasks_updated_at 
+FROM tasks 
+WHERE tasks.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:44:14 - INFO - [generated in 0.01349s] {'id_1': UUID('6e8b6bf7-97ae-463a-b405-02b1f3ad97cf'), 'param_1': 1}
+2025-11-21 05:44:14 - INFO - SELECT models.id AS models_id, models.name AS models_name, models.version AS models_version, models.architecture AS models_architecture, models.dataset_id AS models_dataset_id, models.minio_model_path AS models_minio_model_path, models.status AS models_status, models.created_at AS models_created_at 
+FROM models 
+WHERE models.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:44:14 - INFO - [generated in 0.00061s] {'id_1': UUID('43fe124c-6dfe-4b09-8275-5a99220ae334'), 'param_1': 1}
+2025-11-21 05:44:14 - INFO - Task 6e8b6bf7-97ae-463a-b405-02b1f3ad97cf - loading image '2d3ed069-cf61-4455-a089-53237181a949_bd8902f8-299e-4d85-b34a-7e57319a1cf8/a0fbdcdd3205c691bafc5879dc8ef0dc.jpg'
+2025-11-21 05:44:14 - INFO - Task 6e8b6bf7-97ae-463a-b405-02b1f3ad97cf - downloading weights to /tmp/tmpk_dq9brr.pt
+2025-11-21 05:44:14 - INFO - Task 6e8b6bf7-97ae-463a-b405-02b1f3ad97cf - creating detector 'yolo'
+2025-11-21 05:44:14 - INFO - Task 6e8b6bf7-97ae-463a-b405-02b1f3ad97cf - running prediction
+2025-11-21 05:44:15 - INFO - SELECT tasks.id AS tasks_id, tasks.user_id AS tasks_user_id, tasks.task_type AS tasks_task_type, tasks.model_id AS tasks_model_id, tasks.dataset_id AS tasks_dataset_id, tasks.input_path AS tasks_input_path, tasks.output_path AS tasks_output_path, tasks.error_msg AS tasks_error_msg, tasks.created_at AS tasks_created_at, tasks.updated_at AS tasks_updated_at 
+FROM tasks 
+WHERE tasks.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:44:15 - INFO - [cached since 1.532s ago] {'id_1': UUID('6e8b6bf7-97ae-463a-b405-02b1f3ad97cf'), 'param_1': 1}
+2025-11-21 05:44:15 - INFO - COMMIT
+2025-11-21 05:44:15 - ERROR - Task 6e8b6bf7-97ae-463a-b405-02b1f3ad97cf - inference failed: Instance '<Task at 0xffff8a2fe1a0>' is not persistent within this Session
+Traceback (most recent call last):
+  File "/app/app/core/use_cases/inference_use_case.py", line 97, in execute
+    self.task_repo.update(task)
+  File "/app/app/infrastructure/database/repositories/task_repository.py", line 32, in update
+    self.db.refresh(task)
+  File "/usr/local/lib/python3.10/site-packages/sqlalchemy/orm/session.py", line 3133, in refresh
+    self._expire_state(state, attribute_names)
+  File "/usr/local/lib/python3.10/site-packages/sqlalchemy/orm/session.py", line 3259, in _expire_state
+    self._validate_persistent(state)
+  File "/usr/local/lib/python3.10/site-packages/sqlalchemy/orm/session.py", line 4117, in _validate_persistent
+    raise sa_exc.InvalidRequestError(
+sqlalchemy.exc.InvalidRequestError: Instance '<Task at 0xffff8a2fe1a0>' is not persistent within this Session
+2025-11-21 05:44:15 - INFO - BEGIN (implicit)
+2025-11-21 05:44:15 - INFO - SELECT tasks.id AS tasks_id, tasks.user_id AS tasks_user_id, tasks.task_type AS tasks_task_type, tasks.model_id AS tasks_model_id, tasks.dataset_id AS tasks_dataset_id, tasks.input_path AS tasks_input_path, tasks.output_path AS tasks_output_path, tasks.error_msg AS tasks_error_msg, tasks.created_at AS tasks_created_at, tasks.updated_at AS tasks_updated_at 
+FROM tasks 
+WHERE tasks.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:44:15 - INFO - [cached since 1.539s ago] {'id_1': UUID('6e8b6bf7-97ae-463a-b405-02b1f3ad97cf'), 'param_1': 1}
+2025-11-21 05:44:15 - INFO - COMMIT
+2025-11-21 05:50:26 - INFO - Inference task e2ccc99e-f229-4250-8542-b4aebf846876 started
+2025-11-21 05:50:26 - INFO - select pg_catalog.version()
+2025-11-21 05:50:26 - INFO - [raw sql] {}
+2025-11-21 05:50:26 - INFO - select current_schema()
+2025-11-21 05:50:26 - INFO - [raw sql] {}
+2025-11-21 05:50:26 - INFO - show standard_conforming_strings
+2025-11-21 05:50:26 - INFO - [raw sql] {}
+2025-11-21 05:50:26 - INFO - BEGIN (implicit)
+2025-11-21 05:50:26 - INFO - SELECT tasks.id AS tasks_id, tasks.user_id AS tasks_user_id, tasks.task_type AS tasks_task_type, tasks.model_id AS tasks_model_id, tasks.dataset_id AS tasks_dataset_id, tasks.input_path AS tasks_input_path, tasks.output_path AS tasks_output_path, tasks.error_msg AS tasks_error_msg, tasks.created_at AS tasks_created_at, tasks.updated_at AS tasks_updated_at 
+FROM tasks 
+WHERE tasks.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:50:26 - INFO - [generated in 0.00029s] {'id_1': UUID('e2ccc99e-f229-4250-8542-b4aebf846876'), 'param_1': 1}
+2025-11-21 05:50:26 - INFO - SELECT models.id AS models_id, models.name AS models_name, models.version AS models_version, models.architecture AS models_architecture, models.dataset_id AS models_dataset_id, models.minio_model_path AS models_minio_model_path, models.status AS models_status, models.created_at AS models_created_at 
+FROM models 
+WHERE models.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:50:26 - INFO - [generated in 0.00018s] {'id_1': UUID('c9d437c6-2292-4ed4-ace4-2dbdf22e7efc'), 'param_1': 1}
+2025-11-21 05:50:26 - INFO - Task e2ccc99e-f229-4250-8542-b4aebf846876 - loading image '41fe9fba-9cfa-46b9-8c00-a8e94fc5f0ac_5a8b76e1-cbee-4a59-b403-2da931a72a40/a0fbdcdd3205c691bafc5879dc8ef0dc.jpg'
+2025-11-21 05:50:26 - INFO - Task e2ccc99e-f229-4250-8542-b4aebf846876 - downloading weights to /tmp/tmpw6m__oob.pt
+2025-11-21 05:50:26 - INFO - Task e2ccc99e-f229-4250-8542-b4aebf846876 - creating detector 'yolo'
+2025-11-21 05:50:27 - INFO - Task e2ccc99e-f229-4250-8542-b4aebf846876 - running prediction
+2025-11-21 05:50:31 - INFO - SELECT tasks.id AS tasks_id, tasks.user_id AS tasks_user_id, tasks.task_type AS tasks_task_type, tasks.model_id AS tasks_model_id, tasks.dataset_id AS tasks_dataset_id, tasks.input_path AS tasks_input_path, tasks.output_path AS tasks_output_path, tasks.error_msg AS tasks_error_msg, tasks.created_at AS tasks_created_at, tasks.updated_at AS tasks_updated_at 
+FROM tasks 
+WHERE tasks.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:50:31 - INFO - [cached since 5.245s ago] {'id_1': UUID('e2ccc99e-f229-4250-8542-b4aebf846876'), 'param_1': 1}
+2025-11-21 05:50:31 - INFO - COMMIT
+2025-11-21 05:50:31 - ERROR - Task e2ccc99e-f229-4250-8542-b4aebf846876 - inference failed: Instance '<Task at 0xffff6eb62230>' is not persistent within this Session
+Traceback (most recent call last):
+  File "/app/app/core/use_cases/inference_use_case.py", line 97, in execute
+    self.task_repo.update(task)
+  File "/app/app/infrastructure/database/repositories/task_repository.py", line 32, in update
+    self.db.refresh(task_model)
+  File "/usr/local/lib/python3.10/site-packages/sqlalchemy/orm/session.py", line 3133, in refresh
+    self._expire_state(state, attribute_names)
+  File "/usr/local/lib/python3.10/site-packages/sqlalchemy/orm/session.py", line 3259, in _expire_state
+    self._validate_persistent(state)
+  File "/usr/local/lib/python3.10/site-packages/sqlalchemy/orm/session.py", line 4117, in _validate_persistent
+    raise sa_exc.InvalidRequestError(
+sqlalchemy.exc.InvalidRequestError: Instance '<Task at 0xffff6eb62230>' is not persistent within this Session
+2025-11-21 05:50:31 - INFO - BEGIN (implicit)
+2025-11-21 05:50:31 - INFO - SELECT tasks.id AS tasks_id, tasks.user_id AS tasks_user_id, tasks.task_type AS tasks_task_type, tasks.model_id AS tasks_model_id, tasks.dataset_id AS tasks_dataset_id, tasks.input_path AS tasks_input_path, tasks.output_path AS tasks_output_path, tasks.error_msg AS tasks_error_msg, tasks.created_at AS tasks_created_at, tasks.updated_at AS tasks_updated_at 
+FROM tasks 
+WHERE tasks.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:50:31 - INFO - [cached since 5.255s ago] {'id_1': UUID('e2ccc99e-f229-4250-8542-b4aebf846876'), 'param_1': 1}
+2025-11-21 05:50:31 - INFO - COMMIT
+2025-11-21 05:54:30 - INFO - Inference task e4ce435e-da5e-43e3-b830-00e7d1477da1 started
+2025-11-21 05:54:30 - INFO - select pg_catalog.version()
+2025-11-21 05:54:30 - INFO - [raw sql] {}
+2025-11-21 05:54:30 - INFO - select current_schema()
+2025-11-21 05:54:30 - INFO - [raw sql] {}
+2025-11-21 05:54:30 - INFO - show standard_conforming_strings
+2025-11-21 05:54:30 - INFO - [raw sql] {}
+2025-11-21 05:54:30 - INFO - BEGIN (implicit)
+2025-11-21 05:54:30 - INFO - SELECT tasks.id AS tasks_id, tasks.user_id AS tasks_user_id, tasks.task_type AS tasks_task_type, tasks.model_id AS tasks_model_id, tasks.dataset_id AS tasks_dataset_id, tasks.input_path AS tasks_input_path, tasks.output_path AS tasks_output_path, tasks.error_msg AS tasks_error_msg, tasks.created_at AS tasks_created_at, tasks.updated_at AS tasks_updated_at 
+FROM tasks 
+WHERE tasks.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:54:30 - INFO - [generated in 0.00075s] {'id_1': UUID('e4ce435e-da5e-43e3-b830-00e7d1477da1'), 'param_1': 1}
+2025-11-21 05:54:30 - INFO - SELECT models.id AS models_id, models.name AS models_name, models.version AS models_version, models.architecture AS models_architecture, models.dataset_id AS models_dataset_id, models.minio_model_path AS models_minio_model_path, models.status AS models_status, models.created_at AS models_created_at 
+FROM models 
+WHERE models.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:54:30 - INFO - [generated in 0.00034s] {'id_1': UUID('43e81823-b3a3-4903-806e-421e4030c72b'), 'param_1': 1}
+2025-11-21 05:54:30 - INFO - Task e4ce435e-da5e-43e3-b830-00e7d1477da1 - loading image '26081fec-6c48-4f4e-bcd9-1c91faa21fad_462c509f-b043-4b53-8725-50f7c8f89775/a0fbdcdd3205c691bafc5879dc8ef0dc.jpg'
+2025-11-21 05:54:30 - INFO - Task e4ce435e-da5e-43e3-b830-00e7d1477da1 - downloading weights to /tmp/tmp7ew2mcfg.pt
+2025-11-21 05:54:30 - INFO - Task e4ce435e-da5e-43e3-b830-00e7d1477da1 - creating detector 'yolo'
+2025-11-21 05:54:30 - INFO - Task e4ce435e-da5e-43e3-b830-00e7d1477da1 - running prediction
+2025-11-21 05:54:31 - INFO - SELECT tasks.id AS tasks_id, tasks.user_id AS tasks_user_id, tasks.task_type AS tasks_task_type, tasks.model_id AS tasks_model_id, tasks.dataset_id AS tasks_dataset_id, tasks.input_path AS tasks_input_path, tasks.output_path AS tasks_output_path, tasks.error_msg AS tasks_error_msg, tasks.created_at AS tasks_created_at, tasks.updated_at AS tasks_updated_at 
+FROM tasks 
+WHERE tasks.id = %(id_1)s::UUID 
+ LIMIT %(param_1)s
+2025-11-21 05:54:31 - INFO - [cached since 1.344s ago] {'id_1': UUID('e4ce435e-da5e-43e3-b830-00e7d1477da1'), 'param_1': 1}
+2025-11-21 05:54:31 - INFO - UPDATE tasks SET output_path=%(output_path)s, updated_at=%(updated_at)s WHERE tasks.id = %(tasks_id)s::UUID
+2025-11-21 05:54:31 - INFO - [generated in 0.00021s] {'output_path': 'fea50947-971f-4c2e-b028-123d4f0292e9_inference_e4ce435e-da5e-43e3-b830-00e7d1477da1.json', 'updated_at': datetime.datetime(2025, 11, 21, 5, 54, 31, 578109, tzinfo=datetime.timezone.utc), 'tasks_id': UUID('e4ce435e-da5e-43e3-b830-00e7d1477da1')}
+2025-11-21 05:54:31 - INFO - COMMIT
+2025-11-21 05:54:31 - INFO - BEGIN (implicit)
+2025-11-21 05:54:31 - INFO - SELECT tasks.id, tasks.user_id, tasks.task_type, tasks.model_id, tasks.dataset_id, tasks.input_path, tasks.output_path, tasks.error_msg, tasks.created_at, tasks.updated_at 
+FROM tasks 
+WHERE tasks.id = %(pk_1)s::UUID
+2025-11-21 05:54:31 - INFO - [generated in 0.00163s] {'pk_1': UUID('e4ce435e-da5e-43e3-b830-00e7d1477da1')}
+2025-11-21 05:54:31 - INFO - Inference success

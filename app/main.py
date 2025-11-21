@@ -7,19 +7,24 @@ from app.infrastructure.messaging import RabbitMQListener
 from app.config import settings
 from app.dependencies import get_db
 from app.logger import setup_logger
+from app.core.enums import QueueTypes
+from app.database import SessionLocal
 
 
 async def main():
     setup_logger()
 
     storage = MinioStorage(endpoint=settings.MINIO_ENDPOINT, access_key=settings.MINIO_ACCESS_KEY, secret_key=settings.MINIO_SECRET_KEY)
-    task_repository = TaskRepository(get_db())
-    model_repository = ModelRepository(get_db())
+
+    db = SessionLocal()
+
+    task_repository = TaskRepository(db)
+    model_repository = ModelRepository(db)
 
     use_case = InferenceUseCase(storage, task_repository, model_repository)
 
     listener = RabbitMQListener(
-        queue_name="inference",
+        queue_name=QueueTypes.inference_queue,
         callback=use_case.execute
     )
 
