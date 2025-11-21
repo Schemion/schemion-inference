@@ -6,8 +6,12 @@ from app.infrastructure.database.repositories.task_repository import TaskReposit
 from app.infrastructure.messaging import RabbitMQListener
 from app.config import settings
 from app.dependencies import get_db
+from app.logger import setup_logger
+
 
 async def main():
+    setup_logger()
+
     storage = MinioStorage(endpoint=settings.minio_endpoint, access_key=settings.minio_access_key, secret_key=settings.minio_secret_key)
     task_repository = TaskRepository(get_db())
     model_repository = ModelRepository(get_db())

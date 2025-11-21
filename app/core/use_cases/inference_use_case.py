@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 from PIL import Image
 from io import BytesIO
 import json
-import logging
 import tempfile
+import logging
 import os
 from app.core.interfaces.storage_interface import IStorageRepository
 from app.core.interfaces.model_interface import IModelRepository
@@ -31,6 +31,8 @@ class InferenceUseCase:
         model_id = UUID(message["model_id"])
         input_path = message["input_path"]
 
+        logger.info(f"Inference task {task_id} started")
+
         task = self.task_repo.get_by_id(task_id)
         if not task:
             logger.error(f"Task {task_id} not found in database")
@@ -46,6 +48,8 @@ class InferenceUseCase:
 
             extension = ".pt" if "yolo" in architecture else ".pth"
 
+            logger.info(f"Task {task_id} - loading image '{input_path}'")
+
             image_bytes = self.storage.download_file_to_bytes(input_path, self.images_bucket)
             image = Image.open(BytesIO(image_bytes)).convert("RGB")
 
@@ -53,14 +57,20 @@ class InferenceUseCase:
             weights_path = tmp_file.name
             tmp_file.close()
 
+            logger.info(f"Task {task_id} - downloading weights to {weights_path}")
+
             self.storage.download_file_to_path(
                 object_name=model_entity.minio_model_path,
                 bucket=self.models_bucket,
                 local_path=weights_path,
             )
 
+            logger.info(f"Task {task_id} - creating detector '{architecture}'")
+
             detector = DetectorFactory.create(architecture)
             detector.load_model(weights_path)
+
+            logger.info(f"Task {task_id} - running prediction")
             predictions = detector.predict(image)
 
             result_data = {
@@ -89,7 +99,7 @@ class InferenceUseCase:
             logger.info(f"Inference success")
 
         except Exception as exc:
-            logger.exception(f"Inference failed")
+            logger.exception(f"Task {task_id} - inference failed: {exc}")
             task.error_msg = str(exc)
             task.updated_at = datetime.now(timezone.utc)
             self.task_repo.update(task)
