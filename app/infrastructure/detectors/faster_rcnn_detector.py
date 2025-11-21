@@ -3,10 +3,11 @@ from typing import List, Dict, Any
 from PIL import Image
 import torch
 import torchvision
-from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from app.core.interfaces import IDetector
 
+
+# TODO: указать что это именно FPN v1
 class FasterRCNNDetector(IDetector):
     def __init__(self):
         self.model = None
@@ -25,8 +26,8 @@ class FasterRCNNDetector(IDetector):
             raise ValueError("Unable to determine the number of classes from model weights")
 
         model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
-            weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT,
-            progress=True
+            weights=None,
+            weights_backbone=None
         )
 
         in_features = model.roi_heads.box_predictor.cls_score.in_features
