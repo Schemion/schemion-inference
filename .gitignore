@@ -17,3 +17,5 @@ build/
 .cache/
 
 .ipynb_checkpoints/
+
+*.log

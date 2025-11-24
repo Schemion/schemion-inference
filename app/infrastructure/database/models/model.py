@@ -11,6 +11,7 @@ class Model(Base):
     name = Column(String(255), nullable=False)
     version = Column(String(50), nullable=False)
     architecture = Column(String(50), nullable=False)
+    architecture_profile = Column(String(50), nullable=False)
     dataset_id = Column(UUID(as_uuid=True), nullable=True)
     minio_model_path = Column(String(512), nullable=False)
     status = Column(Enum(ModelStatus, name="model_status"), nullable=False, default=ModelStatus.pending)

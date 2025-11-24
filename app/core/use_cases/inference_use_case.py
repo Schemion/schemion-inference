@@ -47,6 +47,7 @@ class InferenceUseCase:
                 raise ValueError(f"Model with id {model_id} not found")
 
             architecture = model_entity.architecture.lower().strip()
+            architecture_profile = model_entity.architecture_profile.lower().strip()
 
             classes = [] # TODO: надо обновить orm и добавить поля для классов, так как стоковые модели faster-rcnn не имеют зашитых в модель классов
 
@@ -69,9 +70,9 @@ class InferenceUseCase:
                 local_path=weights_path,
             )
 
-            logger.info(f"Task {task_id} - creating detector '{architecture}'")
+            logger.info(f"Task {task_id} - creating detector '{architecture}' and profile '{architecture_profile}'")
 
-            detector = self.detector_factory.create(architecture=architecture, classes=classes)
+            detector = self.detector_factory.create(architecture=architecture,architecture_profile=architecture_profile, classes=classes)
             detector.load_model(weights_path)
 
             logger.info(f"Task {task_id} - running prediction")

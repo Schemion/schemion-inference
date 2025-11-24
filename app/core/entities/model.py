@@ -10,6 +10,7 @@ class Model:
     name: str
     version: str
     architecture: str
+    architecture_profile: str
     dataset_id: Optional[uuid.UUID]
     minio_model_path: str
     status: str

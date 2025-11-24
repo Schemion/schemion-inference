@@ -8,7 +8,7 @@ from app.core.interfaces import IDetector
 
 
 class FasterRCNNDetector(IDetector):
-    def __init__(self, architecture: str, classes: List[str] = None):
+    def __init__(self, architecture: str ,classes: List[str] = None):
         self._ARCHITECTURE_MAP = {
             "fasterrcnn_resnet50_fpn": torchvision.models.detection.fasterrcnn_resnet50_fpn,
             "fasterrcnn_resnet50_fpn_v2": torchvision.models.detection.fasterrcnn_resnet50_fpn_v2,
@@ -25,7 +25,7 @@ class FasterRCNNDetector(IDetector):
         self.architecture = architecture
         self.model = None
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.classes = ["__background__"] + (classes or [])
+        self.classes = ["__background__"] + (classes or []) if classes else None
 
     def load_model(self, model_weights_path: str) -> None:
         state_dict = torch.load(model_weights_path, map_location=self.device)
