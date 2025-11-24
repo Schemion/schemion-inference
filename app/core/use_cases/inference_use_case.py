@@ -6,15 +6,16 @@ import json
 import tempfile
 import logging
 import os
+
+from app.core.interfaces import IDetectorFactory
 from app.core.interfaces.storage_interface import IStorageRepository
 from app.core.interfaces.model_interface import IModelRepository
 from app.core.interfaces.task_interface import ITaskRepository
-from app.core.services.detector_factory import DetectorFactory
 
 logger = logging.getLogger(__name__)
 
 class InferenceUseCase:
-    def __init__(self,storage: IStorageRepository, task_repo: ITaskRepository, model_repo: IModelRepository,
+    def __init__(self,storage: IStorageRepository, task_repo: ITaskRepository, model_repo: IModelRepository, detector_factory: IDetectorFactory,
             images_bucket: str = "schemas-images", # потом поменять так как изменил тему немного
             models_bucket: str = "models",
             results_bucket: str = "inference-results", # его пока нет но надо бы чтобы был
@@ -22,6 +23,7 @@ class InferenceUseCase:
         self.storage = storage
         self.task_repo = task_repo
         self.model_repo = model_repo
+        self.detector_factory = detector_factory
         self.images_bucket = images_bucket
         self.models_bucket = models_bucket
         self.results_bucket = results_bucket
@@ -46,6 +48,8 @@ class InferenceUseCase:
 
             architecture = model_entity.architecture.lower().strip()
 
+            classes = [] # TODO: надо обновить orm и добавить поля для классов, так как стоковые модели faster-rcnn не имеют зашитых в модель классов
+
             extension = ".pt" if "yolo" in architecture else ".pth"
 
             logger.info(f"Task {task_id} - loading image '{input_path}'")
@@ -67,7 +71,7 @@ class InferenceUseCase:
 
             logger.info(f"Task {task_id} - creating detector '{architecture}'")
 
-            detector = DetectorFactory.create(architecture)
+            detector = self.detector_factory.create(architecture=architecture, classes=classes)
             detector.load_model(weights_path)
 
             logger.info(f"Task {task_id} - running prediction")

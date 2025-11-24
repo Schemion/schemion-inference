@@ -7,31 +7,38 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from app.core.interfaces import IDetector
 
 
-# TODO: указать что это именно FPN v1
 class FasterRCNNDetector(IDetector):
-    def __init__(self):
+    def __init__(self, architecture: str, classes: List[str] = None):
+        self._ARCHITECTURE_MAP = {
+            "fasterrcnn_resnet50_fpn": torchvision.models.detection.fasterrcnn_resnet50_fpn,
+            "fasterrcnn_resnet50_fpn_v2": torchvision.models.detection.fasterrcnn_resnet50_fpn_v2,
+            "fasterrcnn_mobilenet_v3_large_fpn": torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn,
+            "fasterrcnn_mobilenet_v3_large_320_fpn": torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn,
+        }
+
+        if architecture not in self._ARCHITECTURE_MAP:
+            raise ValueError(
+                f"Unsupported Faster R-CNN architecture: {architecture}. "
+                f"Available options: {list(self._ARCHITECTURE_MAP.keys())}"
+            )
+
+        self.architecture = architecture
         self.model = None
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.classes = None
+        self.classes = ["__background__"] + (classes or [])
 
     def load_model(self, model_weights_path: str) -> None:
         state_dict = torch.load(model_weights_path, map_location=self.device)
 
-        if "roi_heads.box_predictor.cls_score.weight" in state_dict:
-            num_classes = state_dict["roi_heads.box_predictor.cls_score.weight"].shape[0]
-        elif "roi_heads.box_predictor.bbox_pred.weight" in state_dict:
-            bbox_weight_shape = state_dict["roi_heads.box_predictor.bbox_pred.weight"].shape[0]
-            num_classes = bbox_weight_shape // 4
-        else:
-            raise ValueError("Unable to determine the number of classes from model weights")
+        num_classes = self._determine_num_classes(state_dict)
 
-        model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
-            weights=None,
-            weights_backbone=None
-        )
+        model_constructor = self._ARCHITECTURE_MAP[self.architecture]
+
+        model = model_constructor(weights=None, weights_backbone=None)
 
         in_features = model.roi_heads.box_predictor.cls_score.in_features
         model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
         model.load_state_dict(state_dict)
         model.to(self.device)
         model.eval()
@@ -70,3 +77,14 @@ class FasterRCNNDetector(IDetector):
             })
 
         return detections
+
+    @staticmethod
+    def _determine_num_classes(state_dict: dict) -> int:
+        if "roi_heads.box_predictor.cls_score.weight" in state_dict:
+            return state_dict["roi_heads.box_predictor.cls_score.weight"].shape[0]
+
+        elif "roi_heads.box_predictor.bbox_pred.weight" in state_dict:
+            bbox_weight_shape = state_dict["roi_heads.box_predictor.bbox_pred.weight"].shape[0]
+            return bbox_weight_shape // 4
+
+        raise ValueError("Unable to determine number of classes from model weights.")

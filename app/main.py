@@ -5,10 +5,10 @@ from app.infrastructure.database.repositories.model_repository import ModelRepos
 from app.infrastructure.database.repositories.task_repository import TaskRepository
 from app.infrastructure.messaging import RabbitMQListener
 from app.config import settings
-from app.dependencies import get_db
 from app.logger import setup_logger
 from app.core.enums import QueueTypes
 from app.database import SessionLocal
+from app.dependencies import get_detector_factory
 
 
 async def main():
@@ -20,8 +20,9 @@ async def main():
 
     task_repository = TaskRepository(db)
     model_repository = ModelRepository(db)
+    detector_factory = get_detector_factory()
 
-    use_case = InferenceUseCase(storage, task_repository, model_repository)
+    use_case = InferenceUseCase(storage, task_repository, model_repository, detector_factory)
 
     listener = RabbitMQListener(
         queue_name=QueueTypes.inference_queue,

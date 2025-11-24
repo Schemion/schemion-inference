@@ -1,19 +1,5 @@
-from app.config import settings
-from app.infrastructure.cloud_storage.minio_storage import MinioStorage
-from app.database import SessionLocal
+from app.core.interfaces import IDetectorFactory
+from app.infrastructure.factories.detector_factory import DetectorFactory
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-def get_storage():
-    storage = MinioStorage(
-        endpoint=settings.MINIO_ENDPOINT,
-        access_key=settings.MINIO_ACCESS_KEY,
-        secret_key=settings.MINIO_SECRET_KEY,
-    )
-    return storage
+def get_detector_factory() -> IDetectorFactory:
+    return DetectorFactory()

@@ -1,1 +1,1 @@
-from .detector_factory import DetectorFactory
+from .detector_service import DetectorFactory
