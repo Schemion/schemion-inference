@@ -1,1 +1,0 @@
-from .detector_service import DetectorFactory
