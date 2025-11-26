@@ -1,10 +1,10 @@
 import asyncio
 from app.core.use_cases import DetectorInferenceUseCase
 from app.infrastructure.cloud_storage import MinioStorage
-from app.infrastructure.database.repositories.model_repository import ModelRepository
-from app.infrastructure.database.repositories.task_repository import TaskRepository
+from app.infrastructure.database.repositories import ModelRepository, TaskRepository
 from app.infrastructure.messaging import RabbitMQListener
 from app.config import settings
+from app.infrastructure.services import ImageLoader, InferenceResultService, ModelWeightsLoader
 from app.logger import setup_logger
 from app.core.enums import QueueTypes
 from app.database import SessionLocal
@@ -21,8 +21,19 @@ async def main():
     task_repository = TaskRepository(db)
     model_repository = ModelRepository(db)
     detector_factory = get_detector_factory()
+    image_loader = ImageLoader(storage=storage, bucket=settings.MINIO_SCHEMAS_BUCKET)
+    weights_loader = ModelWeightsLoader(storage=storage, bucket=settings.MINIO_MODELS_BUCKET)
+    result_repo = InferenceResultService(storage=storage, bucket=settings.MINIO_INFERENCE_RESULTS_BUCKET)
 
-    use_case = DetectorInferenceUseCase(storage, task_repository, model_repository, detector_factory)
+    use_case = DetectorInferenceUseCase(
+        storage=storage,
+        task_repo=task_repository,
+        model_repo=model_repository,
+        detector_factory=detector_factory,
+        image_loader=image_loader,
+        weights_loader=weights_loader,
+        result_repo=result_repo
+    )
 
     listener = RabbitMQListener(
         queue_name=QueueTypes.inference_queue,
