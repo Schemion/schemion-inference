@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy import Column, UUID, String, func, DateTime, Enum
+from sqlalchemy.dialects.postgresql import JSONB
 from app.core.enums import ModelStatus
 from app.infrastructure.database.models.base import Base
 
@@ -12,6 +13,7 @@ class Model(Base):
     version = Column(String(50), nullable=False)
     architecture = Column(String(50), nullable=False)
     architecture_profile = Column(String(50), nullable=False)
+    classes = Column(JSONB, nullable=True) # тут json для хранения классов для faster rcnn
     dataset_id = Column(UUID(as_uuid=True), nullable=True)
     minio_model_path = Column(String(512), nullable=False)
     status = Column(Enum(ModelStatus, name="model_status"), nullable=False, default=ModelStatus.pending)

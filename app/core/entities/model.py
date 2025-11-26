@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
 import uuid
 
 
@@ -11,6 +11,7 @@ class Model:
     version: str
     architecture: str
     architecture_profile: str
+    classes: Optional[List[str]]
     dataset_id: Optional[uuid.UUID]
     minio_model_path: str
     status: str
