@@ -3,3 +3,6 @@ from .model_interface import IModelRepository
 from .storage_interface import IStorageRepository
 from .detector_interface import IDetector
 from .detector_factory_interface import IDetectorFactory
+from .image_loader_interface import IImageLoader
+from .model_weights_loader_interface import IModelWeightsLoader
+from .inference_result_interface import IInferenceResult

@@ -1,5 +1,5 @@
 import asyncio
-from app.core.use_cases import InferenceUseCase
+from app.core.use_cases import DetectorInferenceUseCase
 from app.infrastructure.cloud_storage import MinioStorage
 from app.infrastructure.database.repositories.model_repository import ModelRepository
 from app.infrastructure.database.repositories.task_repository import TaskRepository
@@ -22,7 +22,7 @@ async def main():
     model_repository = ModelRepository(db)
     detector_factory = get_detector_factory()
 
-    use_case = InferenceUseCase(storage, task_repository, model_repository, detector_factory)
+    use_case = DetectorInferenceUseCase(storage, task_repository, model_repository, detector_factory)
 
     listener = RabbitMQListener(
         queue_name=QueueTypes.inference_queue,

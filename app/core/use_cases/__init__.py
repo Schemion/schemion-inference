@@ -1,1 +1,1 @@
-from .inference_use_case import InferenceUseCase
+from .detectors_inference_use_case import DetectorInferenceUseCase
