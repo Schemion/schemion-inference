@@ -6,3 +6,4 @@ from .detector_factory_interface import IDetectorFactory
 from .image_loader_interface import IImageLoader
 from .model_weights_loader_interface import IModelWeightsLoader
 from .inference_result_interface import IInferenceResult
+from .image_tiler_interface import IImageTilerInterface

@@ -5,6 +5,7 @@ from app.infrastructure.database.repositories import ModelRepository, TaskReposi
 from app.infrastructure.messaging import RabbitMQListener
 from app.config import settings
 from app.infrastructure.services import ImageLoader, InferenceResultService, ModelWeightsLoader
+from app.infrastructure.services.image_tiler_service import ImageTilerService
 from app.logger import setup_logger
 from app.core.enums import QueueTypes
 from app.database import SessionLocal
@@ -24,6 +25,7 @@ async def main():
     image_loader = ImageLoader(storage=storage, bucket=settings.MINIO_SCHEMAS_BUCKET)
     weights_loader = ModelWeightsLoader(storage=storage, bucket=settings.MINIO_MODELS_BUCKET)
     result_repo = InferenceResultService(storage=storage, bucket=settings.MINIO_INFERENCE_RESULTS_BUCKET)
+    image_tiler = ImageTilerService()
 
     use_case = DetectorInferenceUseCase(
         storage=storage,
@@ -32,7 +34,8 @@ async def main():
         detector_factory=detector_factory,
         image_loader=image_loader,
         weights_loader=weights_loader,
-        result_repo=result_repo
+        result_repo=result_repo,
+        image_tiler=image_tiler
     )
 
     listener = RabbitMQListener(

@@ -1,5 +1,4 @@
 import logging
-import sys
 
 
 def setup_logger():
@@ -8,7 +7,7 @@ def setup_logger():
 
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
-    handler = logging.StreamHandler(sys.stdout)
+    handler = logging.StreamHandler()
     handler.setFormatter(formatter)
 
     logger.handlers.clear()

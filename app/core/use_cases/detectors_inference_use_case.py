@@ -2,7 +2,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 import logging
 
-from app.core.interfaces import IDetectorFactory, IImageLoader, IModelWeightsLoader, IInferenceResult
+from app.core.interfaces import IDetectorFactory, IImageLoader, IModelWeightsLoader, IInferenceResult, IImageTilerInterface
 from app.core.interfaces.storage_interface import IStorageRepository
 from app.core.interfaces.model_interface import IModelRepository
 from app.core.interfaces.task_interface import ITaskRepository
@@ -18,6 +18,7 @@ class DetectorInferenceUseCase:
              task_repo: ITaskRepository,
              model_repo: IModelRepository,
              detector_factory: IDetectorFactory,
+             image_tiler: IImageTilerInterface
         ):
         self.image_loader = image_loader
         self.weights_loader = weights_loader
@@ -25,7 +26,8 @@ class DetectorInferenceUseCase:
         self.storage = storage
         self.task_repo = task_repo
         self.model_repo = model_repo
-        self.detector_factory = detector_factory
+        self.detector_factory = detector_factory,
+        self.image_tiler = image_tiler
 
     def execute(self, message: dict) -> None:
         task_id = UUID(message["task_id"])
@@ -55,15 +57,30 @@ class DetectorInferenceUseCase:
             )
             detector.load_model(weights_file)
 
-            logger.info(f"Task {task_id} - running prediction")
+            logger.info(f"Task {task_id} - generating tiles")
+            tiles = self.image_tiler.tile(image)
 
-            predictions = detector.predict(image)
+            all_shifted_predictions = []
+
+            logger.info(f"Task {task_id} - running prediction")
+            for tile in tiles:
+                predictions = detector.predict(tile)
+                shifted = self.image_tiler.shift_predictions(
+                    predictions,
+                    offset_x=tile.x,
+                    offset_y=tile.y
+                )
+
+                all_shifted_predictions.append(shifted)
+
+            logger.info(f"Task {task_id} - merging predictions")
+            merged_predictions = self.image_tiler.merge_predictions(all_shifted_predictions)
 
             result = {
                 "task_id": str(task_id),
                 "model_id": str(model_id),
                 "model_arch": model.architecture,
-                "predictions": predictions,
+                "predictions": merged_predictions,
                 "image_width": image.width,
                 "image_height": image.height,
                 "processed_at": datetime.now(timezone.utc).isoformat(),
