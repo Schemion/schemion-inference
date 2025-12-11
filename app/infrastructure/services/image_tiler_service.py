@@ -11,36 +11,42 @@ class ImageTilerService(IImageTilerInterface):
         self.tile_size = tile_size
         self.overlap = overlap
 
-    def tile(self, image: Image.Image) -> List[Tile]:
-        tiles = []
+    def tile(self, image: Image.Image):
         width, height = image.size
 
-        if width < self.tile_size and height < self.tile_size:
-            return [Tile(image, 0,0, width, height)]
+        if width <= self.tile_size and height <= self.tile_size:
+            yield Tile(image, 0, 0, width, height)
+            return
 
         step = max(1, self.tile_size - self.overlap)
 
+        x_positions = []
+        x = 0
+        while x < width:
+            if x + self.tile_size > width:
+                x = max(0, width - self.tile_size)
+            x_positions.append(x)
+            if x + self.tile_size >= width:
+                break
+            x += step
+
+        y_positions = []
         y = 0
         while y < height:
-            x = 0
-            while x < width:
+            if y + self.tile_size > height:
+                y = max(0, height - self.tile_size)
+            y_positions.append(y)
+            if y + self.tile_size >= height:
+                break
+            y += step
+
+        for y in y_positions:
+            for x in x_positions:
                 x_end = min(x + self.tile_size, width)
                 y_end = min(y + self.tile_size, height)
 
-                if x_end - x < self.tile_size:
-                    x = max(0, width - self.tile_size)
-                    x_end = width
-
-                if y_end - y < self.tile_size:
-                    y = max(0, height - self.tile_size)
-                    y_end = height
-
                 tile_img = image.crop((x, y, x_end, y_end))
-                tiles.append(Tile(tile_img, x, y, x_end - x, y_end - y))
-                x += step
-            y += step
-
-        return tiles
+                yield Tile(tile_img, x, y, x_end - x, y_end - y)
 
     def shift_predictions(self, predictions, offset_x, offset_y):
         shifted_predictions = []

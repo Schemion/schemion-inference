@@ -26,7 +26,7 @@ class DetectorInferenceUseCase:
         self.storage = storage
         self.task_repo = task_repo
         self.model_repo = model_repo
-        self.detector_factory = detector_factory,
+        self.detector_factory = detector_factory
         self.image_tiler = image_tiler
 
     def execute(self, message: dict) -> None:
@@ -57,20 +57,15 @@ class DetectorInferenceUseCase:
             )
             detector.load_model(weights_file)
 
-            logger.info(f"Task {task_id} - generating tiles")
-            tiles = self.image_tiler.tile(image)
 
             all_shifted_predictions = []
 
             logger.info(f"Task {task_id} - running prediction")
-            for tile in tiles:
-                predictions = detector.predict(tile)
-                shifted = self.image_tiler.shift_predictions(
-                    predictions,
-                    offset_x=tile.x,
-                    offset_y=tile.y
-                )
 
+            for tile in self.image_tiler.tile(image):
+                logger.info(f"Running predict on tile at {tile.x},{tile.y} size={tile.image.width}x{tile.image.height}")
+                predictions = detector.predict(tile.image)
+                shifted = self.image_tiler.shift_predictions(predictions, tile.x, tile.y)
                 all_shifted_predictions.append(shifted)
 
             logger.info(f"Task {task_id} - merging predictions")
