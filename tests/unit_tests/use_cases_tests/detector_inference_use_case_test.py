@@ -14,6 +14,7 @@ def test_detector_inference_use_case():
     weights_loader = MagicMock()
     result_repo = MagicMock()
     detector_factory = MagicMock()
+    image_tiler = MagicMock()
 
     use_case = DetectorInferenceUseCase(
         storage=storage,
@@ -23,6 +24,7 @@ def test_detector_inference_use_case():
         image_loader=image_loader,
         weights_loader=weights_loader,
         result_repo=result_repo,
+        image_tiler=image_tiler,
     )
 
     task_id = "12345678-1234-5678-1234-567812345678"
@@ -52,9 +54,17 @@ def test_detector_inference_use_case():
     weights_path = "/tmp/yolo.pt"
     weights_loader.load.return_value = weights_path
 
+    tile_mock = MagicMock()
+    tile_mock.image = image
+    tile_mock.x = 0
+    tile_mock.y = 0
+    image_tiler.tile.return_value = [tile_mock]
+
     detector = MagicMock()
     detector.predict.return_value = [{"label": "person", "confidence": 0.9, "bbox": [10, 20, 100, 150]}]
     detector_factory.create.return_value = detector
+
+    image_tiler.merge_predictions.return_value = [{"label": "person", "confidence": 0.9, "bbox": [10, 20, 100, 150]}]
 
     result_path = f"inference-results/inference_{task_id}.json"
     result_repo.save.return_value = result_path
