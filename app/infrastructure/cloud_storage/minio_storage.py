@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class MinioStorage(IStorageRepository):
     def __init__(self, endpoint: str, access_key: str, secret_key: str, bucket: str | None = None, secure: bool = False):
-        self.client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=secure)
+        self.client = Minio(endpoint=endpoint, access_key=access_key, secret_key=secret_key, secure=secure)
         self.endpoint = endpoint
         self.public_endpoint = "files.localhost"
         self.bucket = bucket
