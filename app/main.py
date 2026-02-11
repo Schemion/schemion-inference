@@ -1,7 +1,7 @@
 import asyncio
 from app.core.use_cases import DetectorInferenceUseCase
 from app.infrastructure.cloud_storage import MinioStorage
-from app.infrastructure.database.repositories import ModelRepository, TaskRepository
+from app.infrastructure.persistence.repositories import ModelRepository, TaskRepository
 from app.infrastructure.messaging import RabbitMQListener
 from app.config import settings
 from app.infrastructure.services import ImageLoader, InferenceResultService, ModelWeightsLoader

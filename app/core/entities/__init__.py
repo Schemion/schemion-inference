@@ -1,2 +1,1 @@
-from .model import Model
-from .task import Task
+from .tile import Tile
