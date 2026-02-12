@@ -1,24 +1,25 @@
-import asyncio
+from app.infrastructure.celery_app import celery_app
 from app.core.use_cases import DetectorInferenceUseCase
 from app.infrastructure.cloud_storage import MinioStorage
 from app.infrastructure.persistence.repositories import ModelRepository, TaskRepository
-from app.infrastructure.messaging import RabbitMQListener
-from app.config import settings
 from app.infrastructure.services import ImageLoader, InferenceResultService, ModelWeightsLoader
 from app.infrastructure.services.image_tiler_service import ImageTilerService
-from app.logger import setup_logger
-from app.core.enums import QueueTypes
-from app.database import SessionLocal
 from app.dependencies import get_detector_factory
+from app.config import settings
+from app.database import SessionLocal
+from app.logger import setup_logger
 
 
-async def main():
+@celery_app.task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
+def process_inference_task(message: dict):
     setup_logger()
 
-    storage = MinioStorage(endpoint=settings.MINIO_ENDPOINT, access_key=settings.MINIO_ACCESS_KEY, secret_key=settings.MINIO_SECRET_KEY)
-
+    storage = MinioStorage(
+        endpoint=settings.MINIO_ENDPOINT,
+        access_key=settings.MINIO_ACCESS_KEY,
+        secret_key=settings.MINIO_SECRET_KEY
+    )
     db = SessionLocal()
-
     task_repository = TaskRepository(db)
     model_repository = ModelRepository(db)
     detector_factory = get_detector_factory()
@@ -38,12 +39,4 @@ async def main():
         image_tiler=image_tiler
     )
 
-    listener = RabbitMQListener(
-        queue_name=QueueTypes.inference_queue,
-        callback=use_case.execute
-    )
-
-    await listener.start()
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    use_case.execute(message)

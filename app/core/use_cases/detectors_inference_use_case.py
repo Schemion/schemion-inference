@@ -46,13 +46,13 @@ class DetectorInferenceUseCase:
 
             logger.info(f"Task {task_id} - downloading weights to {model.minio_model_path}")
 
-            weights_file = self.weights_loader.load(model.minio_model_path)
+            weights_file = self.weights_loader.load(str(model.minio_model_path))
 
             logger.info(f"Task {task_id} - creating detector")
 
             detector = self.detector_factory.create(
-                architecture=model.architecture,
-                architecture_profile=model.architecture_profile,
+                architecture=str(model.architecture),
+                architecture_profile=str(model.architecture_profile),
                 classes=model.classes or [],
             )
             detector.load_model(weights_file)
