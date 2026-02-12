@@ -10,10 +10,8 @@ from app.database import SessionLocal
 from app.logger import setup_logger
 
 
-@celery_app.task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
+@celery_app.task(bind=False, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
 def process_inference_task(message: dict):
-    setup_logger()
-
     storage = MinioStorage(
         endpoint=settings.MINIO_ENDPOINT,
         access_key=settings.MINIO_ACCESS_KEY,
