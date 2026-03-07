@@ -2,6 +2,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 import logging
 
+from app.core.enums import TaskStatus
 from app.core.interfaces import IDetectorFactory, IImageLoader, IModelWeightsLoader, IInferenceResult, IImageTilerInterface
 from app.core.interfaces.storage_interface import IStorageRepository
 from app.core.interfaces.model_interface import IModelRepository
@@ -35,9 +36,12 @@ class DetectorInferenceUseCase:
         image_path = message["input_path"]
 
         logger.info(f"Inference task {task_id} started")
+        
 
         task = self.task_repo.get_by_id(task_id)
         model = self.model_repo.get_by_id(model_id)
+        
+        task.status = TaskStatus.running.value
 
         logger.info(f"Task {task_id} - loading image")
         try:
@@ -87,6 +91,7 @@ class DetectorInferenceUseCase:
             )
 
             task.output_path = object_path
+            task.status = TaskStatus.succeeded.value
             task.updated_at = datetime.now(timezone.utc)
             self.task_repo.update(task)
 
@@ -97,4 +102,5 @@ class DetectorInferenceUseCase:
             logger.exception(f"Task {task_id} - inference failed: {exc}")
             task.error_msg = str(exc)
             task.updated_at = datetime.now(timezone.utc)
+            task.status = TaskStatus.failed.value
             self.task_repo.update(task)
