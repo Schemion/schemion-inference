@@ -7,6 +7,8 @@ class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://admin:admin@database:5432/schemion")
     RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "amqp://admin:admin@rabbitmq:5672/")
     REDIS_BROKER_URL: str = os.getenv("REDIS_BROKER_URL", "redis://:adminpass@redis:6379/1")
+    BOBBER_HOST: str = os.getenv("BOBBER_HOST", "bob-the-broker")
+    BOBBER_PORT: int = int(os.getenv("BOBBER_PORT", "50051"))
     JWT_SECRET: str = os.getenv("JWT_SECRET", "supersecret")
     JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
