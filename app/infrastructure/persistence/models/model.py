@@ -14,6 +14,7 @@ class Model(Base):
     architecture_profile: Mapped[str] = mapped_column(String(50), nullable=False)
     classes: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True) # тут текстовый массив для хранения классов для faster rcnn
     minio_model_path: Mapped[str] = mapped_column(String(512), nullable=False)
+    metrics_path: Mapped[str] = mapped_column(String(512), nullable=True)
     user_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), nullable=True)
     is_system: Mapped[bool] = mapped_column(Boolean, nullable=False)
     base_model_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), nullable=True)
