@@ -16,7 +16,10 @@ class DetectorFactory(IDetectorFactory):
 
     def create(self, architecture: str, architecture_profile: Optional[str] = None, classes: Optional[List[str]] = None) -> IDetector:
         arch = architecture.lower().strip()
-        profile_key = architecture_profile.lower() if architecture_profile else "default"
+        if not architecture_profile or architecture_profile.lower().strip() == "default":
+            profile_key = arch
+        else:
+            profile_key = architecture_profile.lower().strip()
         true_arch = self._resolve_arch_alias(arch)
         true_profile = self._resolve_profile_alias(profile_key)
 
