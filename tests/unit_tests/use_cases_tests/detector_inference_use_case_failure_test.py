@@ -16,7 +16,6 @@ def test_detector_inference_use_case_marks_task_failed_when_image_loading_crashe
 
     use_case = DetectorInferenceUseCase(
         storage=storage,
-        task_repo=task_repo,
         model_repo=model_repo,
         detector_factory=detector_factory,
         image_loader=image_loader,
@@ -25,8 +24,6 @@ def test_detector_inference_use_case_marks_task_failed_when_image_loading_crashe
         image_tiler=image_tiler,
     )
 
-    task = MagicMock()
-    task_repo.get_by_id.return_value = task
     model_repo.get_by_id.return_value = MagicMock()
     image_loader.load.side_effect = RuntimeError("cannot read image")
 
@@ -36,12 +33,13 @@ def test_detector_inference_use_case_marks_task_failed_when_image_loading_crashe
         "input_path": "input/broken.jpg",
     }
 
-    use_case.execute(message)
+    status_update = use_case.execute(message)
 
-    assert task.status == TaskStatus.failed.value
-    assert task.error_msg == "cannot read image"
-    assert task.updated_at is not None
-    task_repo.update.assert_called_once_with(task)
+    task_repo.assert_not_called()
+    assert status_update["task_id"] == message["task_id"]
+    assert status_update["task_type"] == "inference"
+    assert status_update["status"] == TaskStatus.failed.value
+    assert status_update["error_msg"] == "cannot read image"
 
     weights_loader.delete.assert_not_called()
     result_repo.save.assert_not_called()

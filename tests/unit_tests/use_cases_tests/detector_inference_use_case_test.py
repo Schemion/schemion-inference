@@ -3,6 +3,7 @@ from uuid import UUID
 
 from PIL import Image
 
+from app.core.enums import TaskStatus
 from app.core.use_cases import DetectorInferenceUseCase
 
 
@@ -18,7 +19,6 @@ def test_detector_inference_use_case():
 
     use_case = DetectorInferenceUseCase(
         storage=storage,
-        task_repo=task_repo,
         model_repo=model_repo,
         detector_factory=detector_factory,
         image_loader=image_loader,
@@ -36,10 +36,6 @@ def test_detector_inference_use_case():
         "model_id": model_id,
         "input_path": input_path,
     }
-
-    task = MagicMock()
-    task.id = task_id
-    task_repo.get_by_id.return_value = task
 
     model_entity = MagicMock()
     model_entity.architecture = "yolo"
@@ -69,9 +65,9 @@ def test_detector_inference_use_case():
     result_path = f"inference-results/inference_{task_id}.json"
     result_repo.save.return_value = result_path
 
-    use_case.execute(message)
+    status_update = use_case.execute(message)
 
-    task_repo.get_by_id.assert_called_once_with(UUID(task_id))
+    task_repo.assert_not_called()
     model_repo.get_by_id.assert_called_once_with(UUID(model_id))
 
     image_loader.load.assert_called_once_with(input_path)
@@ -95,8 +91,10 @@ def test_detector_inference_use_case():
     assert result_data["image_width"] == 640
     assert result_data["image_height"] == 480
 
-    assert task.output_path == result_path
-    assert task.updated_at is not None
-    task_repo.update.assert_called()
+    assert status_update["task_id"] == task_id
+    assert status_update["task_type"] == "inference"
+    assert status_update["status"] == TaskStatus.succeeded.value
+    assert status_update["output_path"] == result_path
+    assert status_update["error_msg"] is None
 
     weights_loader.delete.assert_called_once_with(weights_path)

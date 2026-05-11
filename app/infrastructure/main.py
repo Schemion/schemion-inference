@@ -3,13 +3,14 @@ import logging
 import signal
 import threading
 import time
+from datetime import datetime, timezone
 
 from bobber import BobberClient
 
 from app.core.use_cases import DetectorInferenceUseCase
-from app.core.enums import QueueTypes
+from app.core.enums import QueueTypes, TaskStatus
 from app.infrastructure.cloud_storage import MinioStorage
-from app.infrastructure.persistence.repositories import ModelRepository, TaskRepository
+from app.infrastructure.persistence.repositories import ModelRepository
 from app.infrastructure.services import ImageLoader, InferenceResultService, ModelWeightsLoader
 from app.infrastructure.services.image_tiler_service import ImageTilerService
 from app.dependencies import get_detector_factory
@@ -19,15 +20,35 @@ from app.logger import setup_logger
 
 logger = logging.getLogger(__name__)
 
-def process_inference_task(message: dict):
+def _publish_task_status(client: BobberClient, message: dict) -> None:
+    message.setdefault("task_type", "inference")
+    message.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
+
+    task_id = message.get("task_id", "unknown")
+    status = message.get("status", "unknown")
+    key = f"inference_{task_id}_{status}"
+    success = client.produce(QueueTypes.inference_queue_result.value, key, json.dumps(message))
+    if not success:
+        logger.error("Failed to publish inference status update: %s", message)
+
+
+def process_inference_task(message: dict, client: BobberClient):
+    _publish_task_status(
+        client,
+        {
+            "task_id": message.get("task_id"),
+            "status": TaskStatus.running.value,
+        },
+    )
+
     storage = MinioStorage(
         endpoint=settings.MINIO_ENDPOINT,
         access_key=settings.MINIO_ACCESS_KEY,
         secret_key=settings.MINIO_SECRET_KEY
     )
     db = SessionLocal()
+    status_update = None
     try:
-        task_repository = TaskRepository(db)
         model_repository = ModelRepository(db)
         detector_factory = get_detector_factory()
         image_loader = ImageLoader(storage=storage, bucket=settings.MINIO_SCHEMAS_BUCKET)
@@ -37,7 +58,6 @@ def process_inference_task(message: dict):
 
         use_case = DetectorInferenceUseCase(
             storage=storage,
-            task_repo=task_repository,
             model_repo=model_repository,
             detector_factory=detector_factory,
             image_loader=image_loader,
@@ -46,9 +66,20 @@ def process_inference_task(message: dict):
             image_tiler=image_tiler
         )
 
-        use_case.execute(message)
+        status_update = use_case.execute(message)
+    except Exception as exc:
+        logger.exception("Unhandled inference worker failure")
+        status_update = {
+            "task_id": message.get("task_id"),
+            "task_type": "inference",
+            "status": TaskStatus.failed.value,
+            "error_msg": str(exc),
+        }
     finally:
         db.close()
+
+    if status_update:
+        _publish_task_status(client, status_update)
 
 
 def _parse_message(payload: dict) -> dict | None:
@@ -68,12 +99,12 @@ def _parse_message(payload: dict) -> dict | None:
         return None
 
 
-def _on_broker_message(payload: dict) -> None:
+def _on_broker_message(client: BobberClient, payload: dict) -> None:
     message = _parse_message(payload)
     if not message:
         return
     logger.info("Received inference task %s", message.get("task_id"))
-    process_inference_task(message)
+    process_inference_task(message, client)
 
 
 def main() -> None:
@@ -93,7 +124,7 @@ def main() -> None:
     signal.signal(signal.SIGTERM, _handle_signal)
 
     topic = QueueTypes.inference_queue.value
-    client.subscribe(topic, _on_broker_message)
+    client.subscribe(topic, lambda payload: _on_broker_message(client, payload))
     logger.info("Listening to broker topic '%s'", topic)
 
     try:

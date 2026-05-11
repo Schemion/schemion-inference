@@ -6,7 +6,6 @@ from app.core.enums import TaskStatus
 from app.core.interfaces import IDetectorFactory, IImageLoader, IModelWeightsLoader, IInferenceResult, IImageTilerInterface
 from app.core.interfaces.storage_interface import IStorageRepository
 from app.core.interfaces.model_interface import IModelRepository
-from app.core.interfaces.task_interface import ITaskRepository
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +15,6 @@ class DetectorInferenceUseCase:
              image_loader: IImageLoader,
              weights_loader: IModelWeightsLoader,
              result_repo: IInferenceResult,
-             task_repo: ITaskRepository,
              model_repo: IModelRepository,
              detector_factory: IDetectorFactory,
              image_tiler: IImageTilerInterface
@@ -25,27 +23,26 @@ class DetectorInferenceUseCase:
         self.weights_loader = weights_loader
         self.result_repo = result_repo
         self.storage = storage
-        self.task_repo = task_repo
         self.model_repo = model_repo
         self.detector_factory = detector_factory
         self.image_tiler = image_tiler
 
-    def execute(self, message: dict) -> None:
-        task_id = UUID(message["task_id"])
-        model_id = UUID(message["model_id"])
-        image_path = message["input_path"]
+    def execute(self, message: dict) -> dict:
+        task_id_raw = str(message["task_id"])
+        weights_file = None
 
-        logger.info(f"Inference task {task_id} started")
-        
-
-        task = self.task_repo.get_by_id(task_id)
-        model = self.model_repo.get_by_id(model_id)
-        
-        task.status = TaskStatus.running.value
-
-        logger.info(f"Task {task_id} - loading image")
         try:
+            task_id = UUID(task_id_raw)
+            model_id = UUID(message["model_id"])
+            image_path = message["input_path"]
 
+            logger.info(f"Inference task {task_id} started")
+
+            model = self.model_repo.get_by_id(model_id)
+            if not model:
+                raise RuntimeError(f"Model {model_id} not found")
+
+            logger.info(f"Task {task_id} - loading image")
             image = self.image_loader.load(image_path)
 
             logger.info(f"Task {task_id} - downloading weights to {model.minio_model_path}")
@@ -90,17 +87,36 @@ class DetectorInferenceUseCase:
                 filename=f"inference_{task_id}.json"
             )
 
-            task.output_path = object_path
-            task.status = TaskStatus.succeeded.value
-            task.updated_at = datetime.now(timezone.utc)
-            self.task_repo.update(task)
-
             logger.info(f"Inference success")
 
-            self.weights_loader.delete(weights_file)
+            return self._status_update(
+                task_id=task_id_raw,
+                status=TaskStatus.succeeded,
+                output_path=object_path,
+            )
         except Exception as exc:
-            logger.exception(f"Task {task_id} - inference failed: {exc}")
-            task.error_msg = str(exc)
-            task.updated_at = datetime.now(timezone.utc)
-            task.status = TaskStatus.failed.value
-            self.task_repo.update(task)
+            logger.exception(f"Task {task_id_raw} - inference failed: {exc}")
+            return self._status_update(
+                task_id=task_id_raw,
+                status=TaskStatus.failed,
+                error_msg=str(exc),
+            )
+        finally:
+            if weights_file:
+                self.weights_loader.delete(weights_file)
+
+    @staticmethod
+    def _status_update(
+        task_id: str,
+        status: TaskStatus,
+        output_path: str | None = None,
+        error_msg: str | None = None,
+    ) -> dict:
+        return {
+            "task_id": task_id,
+            "task_type": "inference",
+            "status": status.value,
+            "output_path": output_path,
+            "error_msg": error_msg,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
