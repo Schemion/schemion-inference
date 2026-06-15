@@ -45,9 +45,10 @@ class FasterRCNNDetector(IDetector):
 
         self.model = model
 
-    def predict(self, image: Image.Image, conf_threshold: float = 0.5) -> List[Dict[str, Any]]:
+    def predict(self, image: Image.Image, confidence: float | None = None) -> List[Dict[str, Any]]:
         if self.model is None:
             raise RuntimeError("Model not loaded. Call load_model() first.")
+        conf_threshold = 0.5 if confidence is None else confidence
         transform = transforms.Compose([
             transforms.ToTensor(),
         ])

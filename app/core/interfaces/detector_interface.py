@@ -8,5 +8,5 @@ class IDetector(ABC):
         ...
 
     @abstractmethod
-    def predict(self, image: Image.Image) -> List[Dict[str, Any]]:
+    def predict(self, image: Image.Image, confidence: float | None = None) -> List[Dict[str, Any]]:
         ...

@@ -10,8 +10,11 @@ class YoloDetector(IDetector):
     def load_model(self, model_weights_path: str) -> None:
         self.model = YOLO(model_weights_path)
 
-    def predict(self, image: Image.Image) -> List[Dict[str, Any]]:
-        results = self.model(image, verbose=False)[0]
+    def predict(self, image: Image.Image, confidence: float | None = None) -> List[Dict[str, Any]]:
+        kwargs = {"verbose": False}
+        if confidence is not None:
+            kwargs["conf"] = confidence
+        results = self.model(image, **kwargs)[0]
         detections = []
         for box in results.boxes:
             xyxy = box.xyxy[0].cpu().numpy()
